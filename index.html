@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Becoin</title>
+    <style>
+        /* Основные стили */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+            text-align: center;
+        }
+
+        /* Баланс монет */
+        #balance {
+            font-size: 3em;
+            font-weight: bold; /* Жирный текст */
+            margin-bottom: 20px;
+        }
+
+        /* Энергия */
+        #energy-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        #energy-fill {
+            height: 100%;
+            background-color: #00ff00;
+            border-radius: 10px;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        #energy-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            line-height: 20px;
+        }
+
+        /* Монетка для клика */
+        #coin {
+            width: 150px;
+            height: 150px;
+            transition: transform 0.1s ease;
+            cursor: pointer;
+        }
+
+        /* Кнопка бустов */
+        #boosts-btn {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #ff5733;
+            color: white;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: default;
+        }
+
+        /* Стиль для версии с ПК */
+        #desktop-message {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            color: white;
+        }
+
+        #desktop-message img {
+            width: 300px;
+            height: auto;
+            margin: 20px 0;
+        }
+
+        #desktop-text {
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        /* Эффект клика */
+        .click-effect {
+            position: absolute;
+            font-size: 1.5em;
+            color: gold;
+            pointer-events: none;
+            animation: fadeOut 1s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        /* Медиа-запрос для ПК */
+        @media (min-width: 768px) {
+            #game {
+                display: none;
+            }
+            #desktop-message {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Сообщение для ПК версии -->
+    <div id="desktop-message">
+        <div id="desktop-text">The best way is with a phone in hand 📱<br>Let's use it!</div>
+        <img src="qr.png" alt="Image">
+        <div id="desktop-text">@becoin1_bot</div>
+    </div>
+
+    <!-- Игровой интерфейс -->
+    <div id="game">
+        <!-- Баланс монет -->
+        <div id="balance">Coins: 0</div>
+
+        <!-- Монетка -->
+        <img id="coin" src="coin.png" alt="Coin">
+
+        <!-- Энергия -->
+        <div id="energy-bar">
+            <div id="energy-fill"></div>
+            <div id="energy-text">Energy: 100/100</div>
+        </div>
+
+        <!-- Кнопка бустов -->
+        <button id="boosts-btn">Boosts (soon)</button>
+    </div>
+
+    <script>
+        let coins = 0;
+        let energy = 100;
+        const maxEnergy = 100;
+        const energyRecovery = 3; // Энергия восстанавливается на 3 каждые 2 секунды
+	let coinsPerClick = 1;
+
+        const balanceDisplay = document.getElementById('balance');
+        const coin = document.getElementById('coin');
+        const energyFill = document.getElementById('energy-fill');
+        const energyText = document.getElementById('energy-text');
+
+        // Функция обновления баланса
+        function updateBalance() {
+            balanceDisplay.textContent = Coins: ${coins};
+        }
+
+        // Обновление энергии
+        function updateEnergy() {
+            energyFill.style.width = ${(energy / maxEnergy) * 100}%;
+            energyText.textContent = Energy: ${energy}/${maxEnergy};
+        }
+
+        // Эффект клика
+        function showClickEffect(x, y, value) {
+            const effect = document.createElement('div');
+            effect.textContent = +${value};
+            effect.classList.add('click-effect');
+            effect.style.left = ${x}px;
+            effect.style.top = ${y}px;
+            document.body.appendChild(effect);
+
+            setTimeout(() => effect.remove(), 1000);
+        }
+
+        // Восстановление энергии каждые 2 секунды
+        setInterval(() => {
+            if (energy < maxEnergy) {
+                energy = Math.min(energy + energyRecovery, maxEnergy);
+                updateEnergy();
+            }
+        }, 2000);
+
+        // Обработка клика на монету
+        coin.addEventListener('click', (e) => {
+            if (energy > 0) {
+                coins += coinsPerClick;
+                energy -= 1;
+                updateBalance();
+                updateEnergy();
+
+                // Эффект монеты
+                coin.style.transform = 'scale(0.9)';
+                setTimeout(() => coin.style.transform = 'scale(1)', 100);
+
+                // Эффект нажатия (+1)
+                showClickEffect(e.clientX, e.clientY, coinsPerClick);
+
+                // Вибрация (только если поддерживается)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+        });
+
+        // Инициализация
+        updateBalance();
+        updateEnergy();
+    </script>
+</body>
+</html>
